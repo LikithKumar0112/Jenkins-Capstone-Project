@@ -352,6 +352,8 @@ java -jar target/employee-management-ci-demo-1.0.0.jar
 mvn clean verify sonar:sonar -Dsonar.host.url=http://<SONARQUBE_HOST>:9000 -Dsonar.login=<TOKEN>
 ```
 
+Test Trigger
+
 ---
 
 ## License
