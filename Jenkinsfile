@@ -75,7 +75,7 @@ pipeline {
         }
 
         stage('Package (on Agent)') {
-            agent { label 'java-agent' }
+            agent { label 'Linux-Agent' }
             steps {
                 echo "Phase 3 — Packaging on distributed agent: ${env.NODE_NAME}"
                 sh 'mvn package -DskipTests'
