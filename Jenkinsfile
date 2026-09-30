@@ -87,6 +87,7 @@ pipeline {
                 echo "Phase 3 — Packaging on distributed agent: ${env.NODE_NAME}"
                 unstash 'source'
                 sh 'mvn package -DskipTests -Djacoco.skip=true'
+                stash name: 'artifact', includes: 'target/*.jar'
                 echo "Running on node: ${env.NODE_NAME}"
             }
         }
@@ -122,6 +123,7 @@ pipeline {
         stage('Archive Artifacts') {
             steps {
                 echo "Phase 4 — Archiving build artifacts..."
+                unstash 'artifact'
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
                 archiveArtifacts artifacts: 'target/site/jacoco/**', allowEmptyArchive: true
                 archiveArtifacts artifacts: 'target/reports/**, target/pmd.xml', allowEmptyArchive: true
