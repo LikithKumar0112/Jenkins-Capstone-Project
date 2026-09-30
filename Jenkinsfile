@@ -82,7 +82,7 @@ pipeline {
         }
 
         stage('Package (on Agent)') {
-            agent { label 'Linux-Agent' }
+            agent any
             steps {
                 echo "Phase 3 — Packaging on distributed agent: ${env.NODE_NAME}"
                 unstash 'source'
@@ -101,16 +101,14 @@ pipeline {
         }
 
         stage('Quality Gate') {
-            steps {
-                echo "Phase 4 — Waiting for SonarQube Quality Gate result..."
-                script {
-                    try {
-                        timeout(time: 5, unit: 'MINUTES') {
-                            def qg = waitForQualityGate()
-                            if (qg.status != 'OK') {
-                                error "Quality Gate FAILED (status: ${qg.status})"
-                            }
-                            echo "Quality Gate passed: ${qg.status}"
+        steps {
+            echo "Phase 4 - Waiting for SonarQube Quality Gate result..."
+            script {
+                try {
+                    timeout(time: 5, unit: 'MINUTES') {
+                        def qg = waitForQualityGate()          // blocks until webhook arrives
+                        if (qg.status != 'OK') {
+                            error "Quality Gate FAILED (status: ${qg.status})"
                         }
                     } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e) {
                         error "Quality Gate did not return in time — failing the build (result unknown)."
