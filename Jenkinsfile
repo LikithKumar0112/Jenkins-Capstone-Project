@@ -92,7 +92,7 @@ pipeline {
             }
         }
 
-        Stage('Quality Gate') {
+        stage('Quality Gate') {
         steps {
             echo "Phase 4 - Waiting for SonarQube Quality Gate result..."
             script {
