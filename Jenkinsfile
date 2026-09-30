@@ -82,7 +82,7 @@ pipeline {
         }
 
         stage('Package (on Agent)') {
-            agent { label 'java-agent' }
+            agent { label 'Linux-Agent' }
             steps {
                 echo "Phase 3 — Packaging on distributed agent: ${env.NODE_NAME}"
                 unstash 'source'
@@ -115,9 +115,13 @@ pipeline {
                     } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e) {
                         error "Quality Gate did not return in time — failing the build (result unknown)."
                     }
+                } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e) {
+                    // timeout / abort = we do NOT know the result -> fail, do not pass
+                    error "Quality Gate did not return in time - failing the build (result unknown)."
                 }
             }
         }
+    }
 
         stage('Archive Artifacts') {
             steps {
