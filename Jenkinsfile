@@ -62,7 +62,7 @@ pipeline {
                 stage('Integration Tests') {
                     steps {
                         echo "Phase 2 (parallel) — Running Integration Tests (Failsafe)..."
-                        sh 'mvn failsafe:integration-test failsafe:verify'
+                        sh 'mvn test-compile failsafe:integration-test failsafe:verify'
                     }
                     post {
                         always {
