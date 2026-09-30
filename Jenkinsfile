@@ -25,6 +25,7 @@ pipeline {
             steps {
                 echo "Phase 1 — Checking out source code from GitHub..."
                 checkout scm
+                stash name: 'source', includes: '**'
             }
         }
 
@@ -60,15 +61,21 @@ pipeline {
 
                 stage('Integration Tests') {
                     steps {
-                        echo "Phase 2 (parallel) — Running Integration Tests..."
-                        sh 'mvn verify -DskipUTs=true -Dsurefire.skip=true'
+                        echo "Phase 2 (parallel) — Running Integration Tests (Failsafe)..."
+                        sh 'mvn failsafe:integration-test failsafe:verify'
+                    }
+                    post {
+                        always {
+                            junit testResults: 'target/failsafe-reports/*.xml',
+                                  allowEmptyResults: true
+                        }
                     }
                 }
 
                 stage('Code Quality Check') {
                     steps {
                         echo "Phase 2 (parallel) — Running static code analysis (PMD)..."
-                        sh 'mvn pmd:check -Dpmd.failOnViolation=false'
+                        sh 'mvn pmd:check'
                     }
                 }
             }
@@ -78,6 +85,7 @@ pipeline {
             agent any
             steps {
                 echo "Phase 3 — Packaging on distributed agent: ${env.NODE_NAME}"
+                unstash 'source'
                 sh 'mvn package -DskipTests'
                 echo "Running on node: ${env.NODE_NAME}"
             }
@@ -102,7 +110,8 @@ pipeline {
                         if (qg.status != 'OK') {
                             error "Quality Gate FAILED (status: ${qg.status})"
                         }
-                        echo "Quality Gate passed: ${qg.status}"
+                    } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e) {
+                        error "Quality Gate did not return in time — failing the build (result unknown)."
                     }
                 } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e) {
                     // timeout / abort = we do NOT know the result -> fail, do not pass
@@ -116,6 +125,8 @@ pipeline {
             steps {
                 echo "Phase 4 — Archiving build artifacts..."
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+                archiveArtifacts artifacts: 'target/site/jacoco/**', allowEmptyArchive: true
+                archiveArtifacts artifacts: 'target/reports/**, target/pmd.xml', allowEmptyArchive: true
             }
         }
     }
