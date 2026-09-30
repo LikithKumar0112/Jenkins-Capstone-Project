@@ -86,7 +86,7 @@ pipeline {
             steps {
                 echo "Phase 3 — Packaging on distributed agent: ${env.NODE_NAME}"
                 unstash 'source'
-                sh 'mvn package -DskipTests'
+                sh 'mvn package -DskipTests -Djacoco.skip=true'
                 echo "Running on node: ${env.NODE_NAME}"
             }
         }
