@@ -27,6 +27,7 @@ sub-projects, all implemented in a single consolidated pipeline:
 
 ## Table of Contents
 
+- [Review Corrections](#review-corrections)
 - [Project Overview](#project-overview)
 - [Architecture](#architecture)
 - [Technologies Used](#technologies-used)
@@ -46,6 +47,48 @@ sub-projects, all implemented in a single consolidated pipeline:
 - [Future Enhancements](#future-enhancements)
 - [Quick Command Reference](#quick-command-reference)
 - [License](#license)
+
+---
+
+## Review Corrections
+
+This section responds to the SkillFyme review. Each point was fixed so the
+pipeline **enforces** quality gates rather than only reporting them — a failing
+gate now turns the build red.
+
+| # | Reviewer feedback | Fix applied |
+|---|-------------------|-------------|
+| A1 | Quality Gate timeout was treated as a pass | Only an `OK` gate proceeds; a non-`OK` result or a timeout now fails the build |
+| A2 | Integration stage ran no real tests | Added the Failsafe plugin and a real `EmployeeServiceIT`; the stage compiles test sources so the `*IT` actually runs |
+| B1 | PMD ran with `failOnViolation=false` | `mvn pmd:check` now enforces a best-practices/error-prone ruleset and fails on violations |
+| B2 | JaCoCo had no minimum | `jacoco:check` enforces **70% line coverage** (excluding the demo `App`); the build fails below it |
+| B3 | No workspace transfer to the agent | Source is `stash`ed to the agent and the built jar `stash`ed back via `unstash` |
+| B4 | Only the JAR was archived | JaCoCo and PMD reports are archived alongside the fingerprinted jar |
+| C1 | Tooling/agent undocumented | Documented the `Maven3`/`JDK17` tools, the agent, and the SonarQube server + webhook (see [Jenkins Prerequisites](#jenkins-prerequisites)) |
+
+**Unit and integration tests both run** — Surefire (15 unit tests) and Failsafe (`EmployeeServiceIT`):
+
+![Unit tests (Surefire)](https://raw.githubusercontent.com/LikithKumar0112/Jenkins-Capstone-Project/screenshots/Screenshots/18-unit-tests-surefire.png)
+
+![Integration tests (Failsafe)](https://raw.githubusercontent.com/LikithKumar0112/Jenkins-Capstone-Project/screenshots/Screenshots/19-integration-tests-failsafe.png)
+
+**The coverage gate enforces the 70% threshold** — the build fails when coverage is below the minimum and passes once it is met:
+
+![JaCoCo coverage gate failing the build](https://raw.githubusercontent.com/LikithKumar0112/Jenkins-Capstone-Project/screenshots/Screenshots/20-jacoco-coverage-gate-failure.png)
+
+![JaCoCo coverage gate passing](https://raw.githubusercontent.com/LikithKumar0112/Jenkins-Capstone-Project/screenshots/Screenshots/21-jacoco-coverage-gate-pass.png)
+
+**Jenkins tooling and the distributed agent** (C1 / B3) — `Maven3` and `JDK17` tool installations and the labelled agent node online:
+
+![Maven3 tool installation](https://raw.githubusercontent.com/LikithKumar0112/Jenkins-Capstone-Project/screenshots/Screenshots/15-jenkins-maven3-tool.png)
+
+![JDK17 tool installation](https://raw.githubusercontent.com/LikithKumar0112/Jenkins-Capstone-Project/screenshots/Screenshots/16-jenkins-jdk17-tool.png)
+
+![Agent node online](https://raw.githubusercontent.com/LikithKumar0112/Jenkins-Capstone-Project/screenshots/Screenshots/17-java-agent-node-online.png)
+
+**Full pipeline — all stages green with the gates enforced:**
+
+![Final pipeline stage view](https://raw.githubusercontent.com/LikithKumar0112/Jenkins-Capstone-Project/screenshots/Screenshots/22-final-pipeline-stage-view.png)
 
 ---
 
