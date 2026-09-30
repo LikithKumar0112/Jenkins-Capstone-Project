@@ -101,25 +101,23 @@ pipeline {
         }
 
         stage('Quality Gate') {
-        steps {
-            echo "Phase 4 - Waiting for SonarQube Quality Gate result..."
-            script {
-                try {
-                    timeout(time: 5, unit: 'MINUTES') {
-                        def qg = waitForQualityGate()          // blocks until webhook arrives
-                        if (qg.status != 'OK') {
-                            error "Quality Gate FAILED (status: ${qg.status})"
+            steps {
+                echo "Phase 4 — Waiting for SonarQube Quality Gate result..."
+                script {
+                    try {
+                        timeout(time: 5, unit: 'MINUTES') {
+                            def qg = waitForQualityGate()
+                            if (qg.status != 'OK') {
+                                error "Quality Gate FAILED (status: ${qg.status})"
+                            }
+                            echo "Quality Gate passed: ${qg.status}"
                         }
                     } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e) {
                         error "Quality Gate did not return in time — failing the build (result unknown)."
                     }
-                } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e) {
-                    // timeout / abort = we do NOT know the result -> fail, do not pass
-                    error "Quality Gate did not return in time - failing the build (result unknown)."
                 }
             }
         }
-    }
 
         stage('Archive Artifacts') {
             steps {
